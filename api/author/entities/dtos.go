@@ -14,3 +14,9 @@ type CreateAuthorDto struct {
 	Name  string `json:"name" validate:"required,min=3,max=50"`
 	Email string `json:"email" validate:"required,email"`
 }
+
+type CreateListAuthorDto struct {
+	Authors []CreateAuthorDto `json:"authors" validate:"required,dive"`
+	Name    string            `json:"name" validate:"required,min=3,max=50"`
+	Email   string            `json:"email" validate:"required,email"`
+}

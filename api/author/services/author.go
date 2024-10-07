@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"myapp/api/author/entities"
 	"myapp/api/author/repositories"
 	"myapp/models"
@@ -29,6 +30,7 @@ func GetListAuthors(c echo.Context) error {
 
 func CreateAuthor(c echo.Context) error {
 	validated_data := c.Get("validated").(*entities.CreateAuthorDto)
+	utils.Logger(utils.InfoLevel, fmt.Sprintf("Field: %v", validated_data))
 	author := &models.Author{
 		Name:  validated_data.Name,
 		Email: &validated_data.Email,

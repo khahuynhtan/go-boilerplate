@@ -5,6 +5,7 @@ import (
 	"myapp/types"
 	"os"
 	"reflect"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -79,6 +80,16 @@ func detectType(val interface{}) string {
 		return "unknown"
 	}
 }
+
+func getDefaultValue(val interface{}) string {
+	defaultValue := detectType(val)
+	if val != "" {
+		defaultValue = fmt.Sprintf("%v", val)
+	}
+
+	return defaultValue
+}
+
 func generateSchema(data interface{}) *Property {
 	property := &Property{}
 
@@ -96,15 +107,28 @@ func generateSchema(data interface{}) *Property {
 		if value.Len() > 0 {
 			property.Items = generateSchema(value.Index(0).Interface())
 		}
+	case reflect.Struct:
+		property.Type = "object"
+		property.Properties = make(map[string]*Property)
+		for i := 0; i < value.NumField(); i++ {
+			field := value.Type().Field(i)
+			fieldVal := value.Field(i).Interface()
+			jsonTag := field.Tag.Get("json")
+			if jsonTag == "" || jsonTag == "-" {
+				jsonTag = strings.ToLower(field.Name)
+			}
+			property.Properties[jsonTag] = generateSchema(fieldVal)
+		}
 	case reflect.String:
 		property.Type = "string"
-		property.Default = data
+
+		property.Default = getDefaultValue(data)
 	case reflect.Float64, reflect.Int, reflect.Int64:
 		property.Type = "number"
-		property.Default = data
+		property.Default = getDefaultValue(data)
 	case reflect.Bool:
 		property.Type = "boolean"
-		property.Default = data
+		property.Default = getDefaultValue(data)
 	default:
 		Logger(InfoLevel, "Unknown")
 	}
@@ -154,13 +178,29 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 		// Handle Request body
 		if endpoint.ExtendSchema.Request != nil {
 			requestSchema := map[string]Property{}
-			// get value of request (dereference pointer)
 			reqValue := reflect.ValueOf(endpoint.ExtendSchema.Request).Elem()
+
 			for i := 0; i < reqValue.NumField(); i++ {
 				field := reqValue.Type().Field(i)
 				fieldVal := reqValue.Field(i).Interface()
-				requestSchema[field.Name] = Property{
-					Type: detectType(fieldVal),
+
+				jsonTag := field.Tag.Get("json")
+				if jsonTag == "" || jsonTag == "-" {
+					jsonTag = strings.ToLower(field.Name)
+				}
+
+				fieldType := reflect.TypeOf(fieldVal)
+				if fieldType.Kind() == reflect.Slice || fieldType.Kind() == reflect.Array {
+					// get element type of array
+					elemType := fieldType.Elem()
+					requestSchema[jsonTag] = Property{
+						Type:  "array",
+						Items: generateSchema(reflect.New(elemType).Elem().Interface()),
+					}
+				} else {
+					requestSchema[jsonTag] = Property{
+						Type: detectType(fieldVal),
+					}
 				}
 			}
 
@@ -183,6 +223,7 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 			switch value.Kind() {
 			case reflect.Map:
 				for key, val := range value.Interface().(map[string]interface{}) {
+					Logger(InfoLevel, fmt.Sprintf("Key: %v, Val: %v", key, val))
 					responseContent[key] = generateSchema(val)
 				}
 
