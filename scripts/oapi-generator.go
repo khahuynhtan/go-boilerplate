@@ -1,8 +1,9 @@
-package utils
+package scripts
 
 import (
 	"fmt"
 	"myapp/types"
+	"myapp/utils"
 	"os"
 	"reflect"
 	"strings"
@@ -10,14 +11,25 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type SecurityScheme struct {
+	Type         string `yaml:"type"`
+	Scheme       string `yaml:"scheme,omitempty"`
+	BearerFormat string `yaml:"bearerFormat,omitempty"`
+}
+
+type Components struct {
+	SecuritySchemes map[string]SecurityScheme `yaml:"securitySchemes"`
+}
+
 type MediaType struct {
 	Schema interface{} `yaml:"schema"`
 }
 
 type OpenAPI struct {
-	OpenAPI string              `yaml:"openapi"`
-	Info    Info                `yaml:"info"`
-	Paths   map[string]PathItem `yaml:"paths"`
+	OpenAPI    string              `yaml:"openapi"`
+	Info       Info                `yaml:"info"`
+	Paths      map[string]PathItem `yaml:"paths"`
+	Components Components          `yaml:"components"`
 }
 
 type Info struct {
@@ -46,6 +58,7 @@ type Operation struct {
 	RequestBody *RequestBody              `yaml:"requestBody,omitempty"`
 	Responses   map[string]ResponseSchema `yaml:"responses,omitempty"`
 	Parameters  []map[string]interface{}  `yaml:"parameters,omitempty"`
+	Security    []map[string][]string     `yaml:"security,omitempty"`
 }
 
 type RequestBody struct {
@@ -130,7 +143,7 @@ func generateSchema(data interface{}) *Property {
 		property.Type = "boolean"
 		property.Default = getDefaultValue(data)
 	default:
-		Logger(InfoLevel, "Unknown")
+		utils.Logger(utils.InfoLevel, "Unknown")
 	}
 	return property
 }
@@ -143,6 +156,15 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 			Version: version,
 		},
 		Paths: make(map[string]PathItem),
+		Components: Components{
+			SecuritySchemes: map[string]SecurityScheme{
+				"bearerAuth": {
+					Type:         "http",
+					Scheme:       "bearer",
+					BearerFormat: "JWT",
+				},
+			},
+		},
 	}
 
 	for _, endpoint := range endpoints {
@@ -157,6 +179,15 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 			Summary:     endpoint.Summary,
 			Description: endpoint.ExtendSchema.Description,
 			Responses:   make(map[string]ResponseSchema),
+		}
+		operation.Security = nil
+
+		if endpoint.ExtendSchema.IsAuth == nil || *endpoint.ExtendSchema.IsAuth {
+			operation.Security = []map[string][]string{
+				{
+					"bearerAuth": {},
+				},
+			}
 		}
 
 		// Handle Parameters
@@ -223,7 +254,6 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 			switch value.Kind() {
 			case reflect.Map:
 				for key, val := range value.Interface().(map[string]interface{}) {
-					Logger(InfoLevel, fmt.Sprintf("Key: %v, Val: %v", key, val))
 					responseContent[key] = generateSchema(val)
 				}
 
@@ -271,6 +301,7 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 					},
 				},
 			}
+
 		}
 
 		switch endpoint.Method {

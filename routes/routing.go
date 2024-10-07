@@ -6,6 +6,7 @@ import (
 	"myapp/middlewares"
 	"myapp/scripts"
 	"myapp/types"
+	"myapp/utils"
 )
 
 type Routing struct {
@@ -39,10 +40,10 @@ func (r Routing) RegisterRoutes() []types.Endpoint {
 				"error":       "Internal Server Error",
 				"status_code": 500,
 			}},
-		Description: "Create author",
+		Description: "Create an author",
 		Tag:         "Authors",
 	}
-	scripts.RegisterEndpoint("/authors", "POST", "create", "create", createAuthorSchema, r.auth.CreateAuthorHandler, &endpoints, middlewares.ValidateRequestMiddleware(new(entities.CreateAuthorDto)))
+	scripts.RegisterEndpoint("/authors", "POST", "Create an author", "createAuthorId", createAuthorSchema, r.auth.CreateAuthorHandler, &endpoints, middlewares.ValidateRequestMiddleware(new(entities.CreateAuthorDto)))
 
 	getListAuthorSchema := types.ExtendSchema{
 		Parameters: []types.Parameter{
@@ -91,9 +92,10 @@ func (r Routing) RegisterRoutes() []types.Endpoint {
 				"status_code": 500,
 			},
 		},
-		Description: "Get list author",
+		Description: "Get list authors",
 		Tag:         "Authors",
+		IsAuth:      utils.BoolPtr(false),
 	}
-	scripts.RegisterEndpoint("/authors", "GET", "get", "get", getListAuthorSchema, r.auth.GetListAuthorsHandler, &endpoints)
+	scripts.RegisterEndpoint("/authors", "GET", "Get list authors", "getListAuthorId", getListAuthorSchema, r.auth.GetListAuthorsHandler, &endpoints)
 	return endpoints
 }

@@ -20,14 +20,14 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func ValidateRequestMiddleware(model interface{}) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// Create a new instance of the model for each request
+			// create a new instance of the model for each request
 			model := reflect.New(reflect.TypeOf(model).Elem()).Interface()
 			// Bind and validate the request
 			if err := c.Bind(model); err != nil {
 				return utils.Response(c, utils.StringPtr("Invalid request format"), nil, utils.IntPtr(http.StatusBadRequest))
 			}
 
-			// Validate using custom validator
+			// validate using custom validator
 			if err := c.Validate(model); err != nil {
 				return utils.Response(c, utils.StringPtr("Validation failed"), err.Error(), utils.IntPtr(http.StatusUnprocessableEntity))
 			}

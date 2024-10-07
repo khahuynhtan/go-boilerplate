@@ -59,7 +59,7 @@ func (s *ServerType) Start() error {
 		s.Echo.Add(ep.Method, ep.Path, echo.HandlerFunc(ep.Handler), ep.Middlewares...)
 	}
 
-	utils.GenerateOpenAPI(endpoints, "API Documentation", "1.0.0")
+	scripts.GenerateOpenAPI(endpoints, "API Documentation", "1.0.0")
 
 	// init services
 	utils.Logger(utils.InfoLevel, "Initializing services...")

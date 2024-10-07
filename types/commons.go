@@ -15,6 +15,7 @@ type Parameter struct {
 }
 
 type ExtendSchema struct {
+	IsAuth      *bool
 	Parameters  []Parameter
 	Request     interface{}
 	Responses   map[int]interface{}

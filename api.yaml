@@ -5,11 +5,11 @@ info:
 paths:
   /authors:
     post:
-      operationId: create
+      operationId: createAuthorId
       tags:
       - Authors
-      summary: create
-      description: Create author
+      summary: Create an author
+      description: Create an author
       requestBody:
         content:
           application/json:
@@ -84,12 +84,14 @@ paths:
                     type: number
                     default: "500"
                 type: object
+      security:
+      - bearerAuth: []
     get:
-      operationId: get
+      operationId: getListAuthorId
       tags:
       - Authors
-      summary: get
-      description: Get list author
+      summary: Get list authors
+      description: Get list authors
       responses:
         "200":
           description: Response for status code 200
@@ -181,3 +183,9 @@ paths:
         schema:
           default: 10
           type: integer
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
