@@ -86,7 +86,6 @@ func generateSchema(data interface{}) *Property {
 	value := reflect.ValueOf(data)
 	switch value.Kind() {
 	case reflect.Map:
-		Logger(InfoLevel, "Slice or Array 2")
 		property.Type = "object"
 		property.Properties = make(map[string]*Property)
 		for key, value := range data.(map[string]interface{}) {
@@ -95,20 +94,15 @@ func generateSchema(data interface{}) *Property {
 	case reflect.Slice, reflect.Array:
 		property.Type = "array"
 		if value.Len() > 0 {
-			Logger(InfoLevel, "Slice or Array")
-
 			property.Items = generateSchema(value.Index(0).Interface())
 		}
 	case reflect.String:
-		Logger(InfoLevel, "String")
 		property.Type = "string"
 		property.Default = data
 	case reflect.Float64, reflect.Int, reflect.Int64:
-		Logger(InfoLevel, "Number")
 		property.Type = "number"
 		property.Default = data
 	case reflect.Bool:
-		Logger(InfoLevel, "Boolean")
 		property.Type = "boolean"
 		property.Default = data
 	default:
@@ -183,10 +177,9 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 		}
 
 		// Handle Response body
-		for statusCode, responseSchema := range endpoint.ExtendSchema.Responses {
+		for statusCode, responseValue := range endpoint.ExtendSchema.Responses {
 			responseContent := map[string]*Property{}
-			// detect type of responseSchema
-			value := reflect.ValueOf(responseSchema)
+			value := reflect.ValueOf(responseValue)
 			switch value.Kind() {
 			case reflect.Map:
 				for key, val := range value.Interface().(map[string]interface{}) {
@@ -194,10 +187,36 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 				}
 
 			case reflect.Slice, reflect.Array:
-				responseContent["items"] = generateSchema(value.Index(0).Interface())
+				operation.Responses[fmt.Sprintf("%d", statusCode)] = ResponseSchema{
+					Description: fmt.Sprintf("Response for status code %d", statusCode),
+					Content: map[string]MediaType{
+						"application/json": {
+							Schema: map[string]interface{}{
+								"type":  "array",
+								"items": generateSchema(value.Index(0).Interface()),
+							},
+						},
+					},
+				}
+				continue
+
+			case reflect.Float64, reflect.Int, reflect.Int64, reflect.String, reflect.Bool:
+				// only return the type of the response, no need inside the object
+				operation.Responses[fmt.Sprintf("%d", statusCode)] = ResponseSchema{
+					Description: fmt.Sprintf("Response for status code %d", statusCode),
+					Content: map[string]MediaType{
+						"application/json": {
+							Schema: map[string]interface{}{
+								"type":    detectType(responseValue),
+								"default": responseValue,
+							},
+						},
+					},
+				}
+				continue
 
 			default:
-				responseContent["default"] = generateSchema(value.Index(0).Interface())
+				responseContent["default"] = generateSchema(value.Interface())
 			}
 
 			operation.Responses[fmt.Sprintf("%d", statusCode)] = ResponseSchema{
@@ -205,7 +224,7 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 				Content: map[string]MediaType{
 					"application/json": {
 						Schema: map[string]interface{}{
-							"type":       "object",
+							"type":       detectType(responseValue),
 							"properties": responseContent,
 						},
 					},
