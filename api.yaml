@@ -1,0 +1,166 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.0
+paths:
+  /authors:
+    post:
+      operationId: create
+      tags:
+      - Authors
+      summary: create
+      description: Create author
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                Email:
+                  type: string
+                Name:
+                  type: string
+              type: object
+      responses:
+        "200":
+          description: Response for status code 200
+          content:
+            application/json:
+              schema:
+                properties:
+                  items:
+                    type: object
+                    properties:
+                      Email:
+                        type: string
+                        default: String
+                      ID:
+                        type: number
+                        default: 1
+                      Name:
+                        type: string
+                        default: Author 1
+                      Users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            ID:
+                              type: number
+                              default: 1
+                            Name:
+                              type: string
+                              default: User 1
+                            Profile:
+                              type: object
+                              properties:
+                                ID:
+                                  type: number
+                                  default: 1
+                                Name:
+                                  type: string
+                                  default: Profile 1
+                type: object
+        "500":
+          description: Response for status code 500
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    default: Internal Server Error
+                  status_code:
+                    type: number
+                    default: 500
+                type: object
+    get:
+      operationId: get
+      tags:
+      - Authors
+      summary: get
+      description: Get list author
+      responses:
+        "200":
+          description: Response for status code 200
+          content:
+            application/json:
+              schema:
+                properties:
+                  items:
+                    type: object
+                    properties:
+                      ID:
+                        type: number
+                        default: 1
+                      Name:
+                        type: string
+                        default: Author 1
+                      Users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            ID:
+                              type: number
+                              default: 1
+                            Name:
+                              type: string
+                              default: User 1
+                            Profile:
+                              type: object
+                              properties:
+                                ID:
+                                  type: number
+                                  default: 1
+                                Name:
+                                  type: string
+                                  default: Profile 1
+                      author:
+                        type: object
+                        properties:
+                          ID:
+                            type: number
+                            default: 1
+                          Name:
+                            type: string
+                            default: Author 1
+                          book:
+                            type: object
+                            properties:
+                              ID:
+                                type: number
+                                default: 1
+                              Name:
+                                type: string
+                                default: Book 1
+                              category:
+                                type: object
+                                properties:
+                                  ID:
+                                    type: number
+                                    default: 1
+                                  Name:
+                                    type: string
+                                    default: Category 1
+                type: object
+        "500":
+          description: Response for status code 500
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    default: Internal Server Error
+                  status_code:
+                    type: number
+                    default: 500
+                type: object
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          type: integer

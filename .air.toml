@@ -1,0 +1,6 @@
+[build]
+  cmd = "go build -o ./tmp/main ."
+  bin = "./tmp/main"
+  full_bin = "APP_ENV=dev ./tmp/main"
+  watch_dir = ["./"]
+  exclude_dir = ["tmp", "vendor"]

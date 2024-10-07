@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15.4-alpine3.18
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=newgo
+      - POSTGRES_USER=newgouser
+      - POSTGRES_PASSWORD=newgopwd
+    ports:
+      - '5432:5432'
+    networks:
+      - hostnet
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/vendor
+    ports:
+      - '8080:8080'
+    environment:
+      - AIR_ENV_FILE=.air.toml
+    command: air
+    depends_on:
+      - db
+    networks:
+      - hostnet
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  hostnet:
+    driver: bridge
