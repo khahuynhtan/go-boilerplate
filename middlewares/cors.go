@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"myapp/utils"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -15,6 +16,7 @@ func Cors() echo.MiddlewareFunc {
 			if c.Request().Method == "OPTIONS" {
 				return c.NoContent(http.StatusOK)
 			}
+			utils.Logger(utils.InfoLevel, "Cors middleware executed")
 			return next(c)
 		}
 	}

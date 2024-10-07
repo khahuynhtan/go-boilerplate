@@ -20,7 +20,10 @@ type SecurityScheme struct {
 type Components struct {
 	SecuritySchemes map[string]SecurityScheme `yaml:"securitySchemes"`
 }
-
+type Server struct {
+	URL         string `yaml:"url"`
+	Description string `yaml:"description,omitempty"`
+}
 type MediaType struct {
 	Schema interface{} `yaml:"schema"`
 }
@@ -30,6 +33,7 @@ type OpenAPI struct {
 	Info       Info                `yaml:"info"`
 	Paths      map[string]PathItem `yaml:"paths"`
 	Components Components          `yaml:"components"`
+	Servers    []Server            `yaml:"servers,omitempty"`
 }
 
 type Info struct {
@@ -163,6 +167,12 @@ func GenerateOpenAPI(endpoints []types.Endpoint, title string, version string) (
 					Scheme:       "bearer",
 					BearerFormat: "JWT",
 				},
+			},
+		},
+		Servers: []Server{
+			{
+				URL:         "http://localhost:8080",
+				Description: "Local server",
 			},
 		},
 	}

@@ -50,26 +50,6 @@ paths:
                       Name:
                         type: string
                         default: Author 1
-                      Users:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            ID:
-                              type: number
-                              default: "1"
-                            Name:
-                              type: string
-                              default: User 1
-                            Profile:
-                              type: object
-                              properties:
-                                ID:
-                                  type: number
-                                  default: "1"
-                                Name:
-                                  type: string
-                                  default: Profile 1
                 type: object
         "500":
           description: Response for status code 500
@@ -189,3 +169,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+servers:
+- url: http://localhost:8080
+  description: Local server

@@ -24,16 +24,6 @@ func (r Routing) RegisterRoutes() []types.Endpoint {
 					"ID":    1,
 					"Name":  "Author 1",
 					"Email": "String",
-					"Users": []map[string]interface{}{
-						{
-							"ID":   1,
-							"Name": "User 1",
-							"Profile": map[string]interface{}{
-								"ID":   1,
-								"Name": "Profile 1",
-							},
-						},
-					},
 				},
 			},
 			500: map[string]interface{}{

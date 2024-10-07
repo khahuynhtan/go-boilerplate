@@ -30,6 +30,17 @@ services:
       - db
     networks:
       - hostnet
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - '8081:8080' # Swagger UI will be available at http://localhost:8081
+    volumes:
+      - ./api.yaml:/api.yaml # Mount the local api.yaml file to the container
+    environment:
+      - SWAGGER_JSON=/api.yaml # Set the Swagger JSON path inside the container
+    networks:
+      - hostnet
 
 volumes:
   postgres_data:
